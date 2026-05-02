@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Link, Navigate } from 'react-router-dom';
 
 import CustomerTrackingPage from './pages/CustomerTrackingPage';
 import AdminDashboard from './pages/AdminDashboard';
@@ -9,6 +9,13 @@ import AuthPage from './pages/AuthPage';
 
 import CreateTripForm from './components/CreateTripForm';
 import { getAuthUser, logoutUser } from './services/apiService';
+
+// Redirects unauthenticated users to /auth
+const ProtectedRoute = ({ children }) => {
+  const user = getAuthUser();
+  if (!user) return <Navigate to="/auth" replace />;
+  return children;
+};
 
 import 'leaflet/dist/leaflet.css';
 
@@ -171,18 +178,19 @@ function App() {
         <Routes>
           <Route path="/auth" element={<AuthPage />} />
 
-          <Route path="/admin" element={<AdminDashboard />} />
+          <Route path="/admin" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />
 
-          <Route path="/driver-dashboard" element={<DriverDashboard />} />
-          <Route path="/driver/:trackingId" element={<DriverApp />} />
+          <Route path="/driver-dashboard" element={<ProtectedRoute><DriverDashboard /></ProtectedRoute>} />
+          <Route path="/driver/:trackingId" element={<ProtectedRoute><DriverApp /></ProtectedRoute>} />
 
           <Route path="/track/:trackingId" element={<CustomerTrackingPage />} />
 
-          <Route path="/book/shopping" element={<CustomerOrderLayout orderType="shopping" />} />
-          <Route path="/book/pickup-drop" element={<CustomerOrderLayout orderType="pickup_drop" />} />
-          <Route path="/book/ride" element={<CustomerOrderLayout orderType="ride" />} />
+          <Route path="/book/shopping" element={<ProtectedRoute><CustomerOrderLayout orderType="shopping" /></ProtectedRoute>} />
+          <Route path="/book/pickup-drop" element={<ProtectedRoute><CustomerOrderLayout orderType="pickup_drop" /></ProtectedRoute>} />
+          <Route path="/book/ride" element={<ProtectedRoute><CustomerOrderLayout orderType="ride" /></ProtectedRoute>} />
 
-          <Route path="/" element={<HomePage />} />
+          {/* Root: redirect to /auth if not logged in, else show home */}
+          <Route path="/" element={<ProtectedRoute><HomePage /></ProtectedRoute>} />
         </Routes>
       </div>
     </Router>
