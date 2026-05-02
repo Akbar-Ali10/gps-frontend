@@ -9,6 +9,7 @@ import AuthPage from './pages/AuthPage';
 
 import CreateTripForm from './components/CreateTripForm';
 import { getAuthUser, logoutUser } from './services/apiService';
+import 'leaflet/dist/leaflet.css';
 
 // Redirects unauthenticated users to /auth
 const ProtectedRoute = ({ children }) => {
@@ -16,8 +17,6 @@ const ProtectedRoute = ({ children }) => {
   if (!user) return <Navigate to="/auth" replace />;
   return children;
 };
-
-import 'leaflet/dist/leaflet.css';
 
 const CustomerOrderLayout = ({ orderType }) => {
   const pageMap = {
