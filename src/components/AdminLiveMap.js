@@ -167,12 +167,35 @@ const AdminLiveMap = ({ refreshTrigger }) => {
       const trips = res?.trips || [];
 
       const map = {};
-
       trips.forEach((trip) => {
         map[String(trip.id)] = trip;
       });
-
       setTripsById(map);
+
+      // Fallback: socket na mile toh API polling se active drivers show karo
+      setDrivers((prev) => {
+        const updated = { ...prev };
+        trips.forEach((trip) => {
+          const status = String(trip.status || '').toLowerCase();
+          const lat = Number(trip.latest_latitude);
+          const lng = Number(trip.latest_longitude);
+          if (!['active', 'in-progress'].includes(status)) return;
+          if (!trip.latest_latitude || !trip.latest_longitude) return;
+          if (isNaN(lat) || isNaN(lng)) return;
+          const markerKey = `${trip.id}-api`;
+          updated[markerKey] = {
+            key: markerKey,
+            lat,
+            lng,
+            tripId: trip.id,
+            trackingId: trip.tracking_id,
+            driverId: trip.driver_id || null,
+            tripStatus: trip.status,
+            updatedAt: trip.updated_at || new Date().toISOString(),
+          };
+        });
+        return updated;
+      });
     } catch (error) {
       console.error('Failed to load trips for admin map:', error);
     }
@@ -180,6 +203,8 @@ const AdminLiveMap = ({ refreshTrigger }) => {
 
   useEffect(() => {
     loadTrips();
+    const interval = setInterval(loadTrips, 5000);
+    return () => clearInterval(interval);
   }, [refreshTrigger]);
 
   useEffect(() => {

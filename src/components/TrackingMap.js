@@ -281,6 +281,17 @@ const TrackingMap = ({ trackingId, customerName, driverName, tripData, onRefresh
     }
   }, [driverOfferAmount, normalizedTripStatus]);
 
+  // Fallback: agar socket na mile toh tripData.location se location update karo
+  useEffect(() => {
+    if (!tripData?.location) return;
+    const coords = getCoordinates(tripData.location);
+    if (!coords) return;
+    setDriverLocation((prev) => {
+      if (prev && prev.lat === coords.lat && prev.lng === coords.lng) return prev;
+      return coords;
+    });
+  }, [tripData?.location]);
+
   useEffect(() => {
     const savedDestinationLat =
       tripData?.destinationLat ?? tripData?.destination_lat ?? null;
