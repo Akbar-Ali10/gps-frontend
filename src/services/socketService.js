@@ -22,21 +22,29 @@ export const initSocket = () => {
 
 export const getSocket = () => initSocket();
 
+const emitWhenConnected = (s, event, data) => {
+  if (s.connected) {
+    s.emit(event, data);
+  } else {
+    s.once('connect', () => s.emit(event, data));
+  }
+};
+
 export const joinTrip = (trackingId) => {
   if (!trackingId) return;
   const s = initSocket();
-  s.emit('join-trip-customer', trackingId);
+  emitWhenConnected(s, 'join-trip-customer', trackingId);
 };
 
 export const joinDriverTrip = (trackingId, driverId) => {
   if (!trackingId) return;
   const s = initSocket();
-  s.emit('join-trip', { trackingId, driverId, role: 'driver' });
+  emitWhenConnected(s, 'join-trip', { trackingId, driverId, role: 'driver' });
 };
 
 export const joinAdminLiveTracking = () => {
   const s = initSocket();
-  s.emit('join-admin-live-tracking');
+  emitWhenConnected(s, 'join-admin-live-tracking', undefined);
 };
 
 export const onLocationUpdate = (callback) => {
