@@ -41,52 +41,44 @@ const statusColors = {
 
 const fmt = (val) => val || 'N/A';
 
-// --- ROBUST PAKISTAN TIMEZONE FIX (FORCE +5 HOURS) ---
-const processDate = (iso) => {
+const parseUTC = (iso) => {
   if (!iso) return null;
   try {
-    // Database string ko handle karne ke liye
     let formatted = iso.replace(' ', 'T');
-    let date = new Date(formatted);
-    
-    // Agar valid date nahi bani (Z missing hone ki wajah se)
-    if (isNaN(date.getTime())) {
-      date = new Date(formatted + 'Z');
-    }
-
-    // MANUALLY ADD 5 HOURS (Pakistan Standard Time Offset)
-    // Ye tab kaam karega jab browser convert nahi kar raha
-    const PK_OFFSET = 5 * 60 * 60 * 1000;
-    return new Date(date.getTime() + PK_OFFSET);
+    if (!formatted.endsWith('Z') && !formatted.includes('+')) formatted += 'Z';
+    const date = new Date(formatted);
+    return isNaN(date.getTime()) ? null : date;
   } catch (e) {
     return null;
   }
 };
 
 const fmtTime = (iso) => {
-  const date = processDate(iso);
-  if (!date || isNaN(date.getTime())) return 'N/A';
-  return date.toLocaleTimeString('en-US', { 
-    hour: '2-digit', 
-    minute: '2-digit', 
-    hour12: true 
+  const date = parseUTC(iso);
+  if (!date) return 'N/A';
+  return date.toLocaleTimeString('en-US', {
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: true,
+    timeZone: 'Asia/Karachi',
   });
 };
 
 const fmtDate = (iso) => {
-  const date = processDate(iso);
-  if (!date || isNaN(date.getTime())) return 'N/A';
-  return date.toLocaleDateString('en-PK', { 
-    day: 'numeric', 
-    month: 'short', 
-    year: 'numeric' 
+  const date = parseUTC(iso);
+  if (!date) return 'N/A';
+  return date.toLocaleDateString('en-US', {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+    timeZone: 'Asia/Karachi',
   });
 };
 
 const minutesDiff = (a, b) => {
-  const dateA = processDate(a);
-  const dateB = processDate(b);
-  if (!dateA || !dateB || isNaN(dateA) || isNaN(dateB)) return null;
+  const dateA = parseUTC(a);
+  const dateB = parseUTC(b);
+  if (!dateA || !dateB) return null;
   return Math.max(0, Math.round((dateB - dateA) / 60000));
 };
 // -----------------------------------------------------
