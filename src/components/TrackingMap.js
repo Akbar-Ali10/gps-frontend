@@ -124,31 +124,38 @@ const computeStats = (locs) => {
   };
 };
 
+// ✅ FIXED: MapController - zoom reset nahi hoga ab
 const MapController = ({ driverLocation, destinationCoords }) => {
   const map = useMap();
+  const hasInitialFit = useRef(false); // ← sirf pehli baar fit karega
 
   useEffect(() => {
     if (!driverLocation) return;
 
-    setTimeout(() => {
-      map.invalidateSize();
+    if (!hasInitialFit.current) {
+      // Pehli baar: bounds fit karo (driver + destination dono dikhao)
+      setTimeout(() => {
+        map.invalidateSize();
 
-      if (destinationCoords) {
-        const bounds = L.latLngBounds([
-          [driverLocation.lat, driverLocation.lng],
-          [destinationCoords.lat, destinationCoords.lng],
-        ]);
+        if (destinationCoords) {
+          const bounds = L.latLngBounds([
+            [driverLocation.lat, driverLocation.lng],
+            [destinationCoords.lat, destinationCoords.lng],
+          ]);
+          map.fitBounds(bounds, { padding: [45, 45] });
+        } else {
+          map.setView([driverLocation.lat, driverLocation.lng], DEFAULT_ZOOM, {
+            animate: true,
+            duration: 0.8,
+          });
+        }
 
-        map.fitBounds(bounds, {
-          padding: [45, 45],
-        });
-      } else {
-        map.setView([driverLocation.lat, driverLocation.lng], DEFAULT_ZOOM, {
-          animate: true,
-          duration: 0.8,
-        });
-      }
-    }, 200);
+        hasInitialFit.current = true; // ← ab dobara fit nahi hoga
+      }, 200);
+    } else {
+      // Driver move kare to sirf smoothly pan karo, zoom mat chheRo
+      map.panTo([driverLocation.lat, driverLocation.lng], { animate: true });
+    }
   }, [driverLocation, destinationCoords, map]);
 
   return null;
@@ -281,7 +288,6 @@ const TrackingMap = ({ trackingId, customerName, driverName, tripData, onRefresh
     }
   }, [driverOfferAmount, normalizedTripStatus]);
 
-  // Fallback: agar socket na mile toh tripData.location se location update karo
   useEffect(() => {
     if (!tripData?.location) return;
     const coords = getCoordinates(tripData.location);
@@ -973,7 +979,6 @@ const TrackingMap = ({ trackingId, customerName, driverName, tripData, onRefresh
                 </Marker>
               )}
 
-
               {routeCoords.length > 0 ? (
                 <Polyline
                   positions={routeCoords}
@@ -1020,7 +1025,6 @@ const TrackingMap = ({ trackingId, customerName, driverName, tripData, onRefresh
                   <div className="w-5 h-1 bg-blue-600 rounded-full"></div>
                   <span className="text-slate-600">Route to go</span>
                 </div>
-
               </div>
             )}
 
@@ -1032,7 +1036,7 @@ const TrackingMap = ({ trackingId, customerName, driverName, tripData, onRefresh
                     : 'bg-white hover:bg-slate-50 text-slate-800 border border-slate-200'
                   }`}
               >
-                {isLinkCopied ? 'Copied!' : 'Share Live Location'}
+                {/* {isLinkCopied ? 'Copied!' : 'Share Live Location'} */}
               </button>
             </div>
           </div>
