@@ -29,20 +29,29 @@ const createDestinationIcon = () =>
     className: '',
   });
 
+// ✅ FIXED: sirf pehli baar fit karega, GPS update pe zoom reset nahi hoga
 const MapFollower = ({ coords, destinationCoords }) => {
   const map = useMap();
+  const hasInitialFit = useRef(false); // ← yeh add kiya
 
   useEffect(() => {
     if (!coords) return;
 
-    if (destinationCoords) {
-      const bounds = L.latLngBounds([
-        [coords.latitude, coords.longitude],
-        [destinationCoords.lat, destinationCoords.lng],
-      ]);
-      map.fitBounds(bounds, { padding: [40, 40] });
+    if (!hasInitialFit.current) {
+      // Pehli baar: bounds fit karo
+      if (destinationCoords) {
+        const bounds = L.latLngBounds([
+          [coords.latitude, coords.longitude],
+          [destinationCoords.lat, destinationCoords.lng],
+        ]);
+        map.fitBounds(bounds, { padding: [40, 40] });
+      } else {
+        map.setView([coords.latitude, coords.longitude], 16, { animate: true });
+      }
+      hasInitialFit.current = true; // ← ab dobara fit nahi hoga
     } else {
-      map.setView([coords.latitude, coords.longitude], 16, { animate: true });
+      // GPS update pe sirf pan karo, zoom mat chheRo
+      map.panTo([coords.latitude, coords.longitude], { animate: true });
     }
   }, [coords, destinationCoords, map]);
 

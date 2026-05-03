@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState, useRef } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, Polyline, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import {
@@ -120,11 +120,14 @@ const getRouteFromOSRM = async (startLat, startLng, endLat, endLng) => {
   }
 };
 
+// ✅ FIXED: sirf pehli baar fit karega, baad mein user ka zoom safe rahega
 const MapAutoFit = ({ drivers }) => {
   const map = useMap();
+  const hasInitialFit = useRef(false); // ← yeh add kiya
 
   useEffect(() => {
     if (!drivers.length) return;
+    if (hasInitialFit.current) return; // ← dobara fit mat karo
 
     setTimeout(() => {
       map.invalidateSize();
@@ -141,11 +144,12 @@ const MapAutoFit = ({ drivers }) => {
 
       if (points.length === 1) {
         map.setView(points[0], 15, { animate: true });
-        return;
+      } else {
+        const bounds = L.latLngBounds(points);
+        map.fitBounds(bounds, { padding: [45, 45] });
       }
 
-      const bounds = L.latLngBounds(points);
-      map.fitBounds(bounds, { padding: [45, 45] });
+      hasInitialFit.current = true; // ← fit ho gaya, ab dobara nahi
     }, 300);
   }, [drivers, map]);
 
@@ -172,7 +176,6 @@ const AdminLiveMap = ({ refreshTrigger }) => {
       });
       setTripsById(map);
 
-      // Fallback: socket na mile toh API polling se active drivers show karo
       setDrivers((prev) => {
         const updated = { ...prev };
         trips.forEach((trip) => {
