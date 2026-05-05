@@ -10,6 +10,7 @@ import AuthPage from './pages/AuthPage';
 import CreateTripForm from './components/CreateTripForm';
 import { getAuthUser, logoutUser } from './services/apiService';
 import 'leaflet/dist/leaflet.css';
+import NotFound from './pages/NotFound';
 
 // Redirects unauthenticated users to /auth
 const ProtectedRoute = ({ children }) => {
@@ -190,6 +191,7 @@ function App() {
 
           {/* Root: redirect to /auth if not logged in, else show home */}
           <Route path="/" element={<ProtectedRoute><HomePage /></ProtectedRoute>} />
+          <Route path="*" element={<NotFound />} />
         </Routes>
       </div>
     </Router>
