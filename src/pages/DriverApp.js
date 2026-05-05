@@ -29,16 +29,14 @@ const createDestinationIcon = () =>
     className: '',
   });
 
-// ✅ FIXED: sirf pehli baar fit karega, GPS update pe zoom reset nahi hoga
 const MapFollower = ({ coords, destinationCoords }) => {
   const map = useMap();
-  const hasInitialFit = useRef(false); // ← yeh add kiya
+  const hasInitialFit = useRef(false);
 
   useEffect(() => {
     if (!coords) return;
 
     if (!hasInitialFit.current) {
-      // Pehli baar: bounds fit karo
       if (destinationCoords) {
         const bounds = L.latLngBounds([
           [coords.latitude, coords.longitude],
@@ -48,9 +46,8 @@ const MapFollower = ({ coords, destinationCoords }) => {
       } else {
         map.setView([coords.latitude, coords.longitude], 16, { animate: true });
       }
-      hasInitialFit.current = true; // ← ab dobara fit nahi hoga
+      hasInitialFit.current = true;
     } else {
-      // GPS update pe sirf pan karo, zoom mat chheRo
       map.panTo([coords.latitude, coords.longitude], { animate: true });
     }
   }, [coords, destinationCoords, map]);
@@ -120,7 +117,7 @@ const DriverApp = () => {
   const [tripId, setTripId] = useState(null);
   const [socketConnected, setSocketConnected] = useState(false);
   const [gpsError, setGpsError] = useState(null);
-  const [statusMsg, setStatusMsg] = useState('Order load ho raha hai...');
+  const [statusMsg, setStatusMsg] = useState('Loading order...'); // ✅ Fixed
   const [linkCopied, setLinkCopied] = useState(false);
   const [showMap, setShowMap] = useState(false);
   const [tripData, setTripData] = useState(null);
@@ -222,7 +219,7 @@ const DriverApp = () => {
       }
     } catch (error) {
       console.error('Failed to fetch trip data:', error);
-      setStatusMsg('Failed to load order');
+      setStatusMsg('Failed to load order.');
     }
   }, [trackingId, stopTrackingOnly]);
 
@@ -263,12 +260,12 @@ const DriverApp = () => {
 
   const handleAssignDriver = async () => {
     if (!driverIdInput.trim()) {
-      setStatusMsg('Driver ID is required');
+      setStatusMsg('Driver ID is required.');
       return;
     }
 
     if (!tripIdRef.current) {
-      setStatusMsg('Order is not ready yet');
+      setStatusMsg('Order is not ready yet.');
       return;
     }
 
@@ -278,7 +275,7 @@ const DriverApp = () => {
       const parsedDriverId = parseInt(driverIdInput, 10);
 
       if (Number.isNaN(parsedDriverId)) {
-        setStatusMsg('Please enter a valid Driver ID');
+        setStatusMsg('Please enter a valid Driver ID.');
         return;
       }
 
@@ -287,7 +284,7 @@ const DriverApp = () => {
       if (response?.success) {
         driverIdRef.current = parsedDriverId;
         setDriverAccepted(true);
-        setStatusMsg('Order accept ho gaya. Ab tracking start kar sakte hain.');
+        setStatusMsg('Order accepted. You can now start tracking.'); // ✅ Fixed
 
         await fetchTripData();
 
@@ -307,7 +304,7 @@ const DriverApp = () => {
         });
       }
     } catch (error) {
-      setStatusMsg(error.response?.data?.error || 'Failed to assign driver');
+      setStatusMsg(error.response?.data?.error || 'Failed to assign driver.');
     } finally {
       setAssigning(false);
     }
@@ -336,12 +333,12 @@ const DriverApp = () => {
         const parsed = parseInt(data.tripId, 10);
         setTripId(parsed);
         tripIdRef.current = parsed;
-        setStatusMsg('Ready — ab START TRACKING dabayein');
+        setStatusMsg('Ready — Press START TRACKING'); // ✅ Fixed
       }
     };
 
     const onLocationSaved = () => setLastSent(new Date());
-    const onLocationError = (data) => setStatusMsg(data?.message || 'Location update failed');
+    const onLocationError = (data) => setStatusMsg(data?.message || 'Location update failed.');
 
     socket.on('connect', onConnect);
     socket.on('disconnect', onDisconnect);
@@ -376,7 +373,7 @@ const DriverApp = () => {
 
     setIsTracking(false);
     setShowMap(false);
-    setStatusMsg('Tracking band ho gayi. Ab complete kar sakte hain.');
+    setStatusMsg('Tracking stopped. You can now complete the order.'); // ✅ Fixed
     isStartingRef.current = false;
     releaseWakeLock();
   }, [releaseWakeLock]);
@@ -406,7 +403,7 @@ const DriverApp = () => {
       await fetchTripData();
     } catch (err) {
       console.error(err);
-      setStatusMsg('Failed to complete order');
+      setStatusMsg('Failed to complete order.');
     } finally {
       setPaymentLoading(false);
     }
@@ -416,17 +413,17 @@ const DriverApp = () => {
     if (isTracking || isStartingRef.current) return;
 
     if (!driverAccepted && !driverIdRef.current) {
-      setStatusMsg('Please accept the order first');
+      setStatusMsg('Please accept the order first.');
       return;
     }
 
     if (!navigator.geolocation) {
-      setGpsError('Geolocation is not available in this browser');
+      setGpsError('Geolocation is not available in this browser.');
       return;
     }
 
     if (!tripIdRef.current) {
-      setStatusMsg('Order not loaded yet');
+      setStatusMsg('Order not loaded yet.');
       return;
     }
 
@@ -434,7 +431,7 @@ const DriverApp = () => {
     setGpsError(null);
     setIsTracking(true);
     setShowMap(true);
-    setStatusMsg('GPS signal dhundh raha hai...');
+    setStatusMsg('Finding GPS signal...'); // ✅ Fixed
 
     requestWakeLock();
 
@@ -458,7 +455,7 @@ const DriverApp = () => {
 
         setCoords({ latitude, longitude });
         setAccuracy(accuracy);
-        setStatusMsg('Live location bheji ja rahi hai...');
+        setStatusMsg('Sending live location...'); // ✅ Fixed
         setLocationCount((n) => n + 1);
         isStartingRef.current = false;
 
@@ -483,7 +480,7 @@ const DriverApp = () => {
         else if (err.code === 3) setGpsError('Location timeout. Please try again.');
         else setGpsError(`GPS error: ${err.message}`);
 
-        setStatusMsg('Failed to start GPS');
+        setStatusMsg('Failed to start GPS.');
       },
       {
         enableHighAccuracy: true,
@@ -529,7 +526,7 @@ const DriverApp = () => {
           <div className="text-6xl mb-4">✅</div>
           <h1 className="text-3xl font-black mb-3">Order Completed</h1>
           <p className="text-gray-400 mb-6">
-            Tracking stop ho gayi hai. Customer ab review de sakta hai.
+            Tracking has stopped. The customer can now submit a review. {/* ✅ Fixed */}
           </p>
           <a
             href="/driver-dashboard"
@@ -845,7 +842,7 @@ const DriverApp = () => {
             ) : (
               <div className="bg-slate-800 rounded-2xl p-4 border border-slate-700">
                 <p className="text-center font-bold text-slate-200 mb-3">
-                  Order complete ho gaya hai?
+                  Has the order been completed? {/* ✅ Fixed */}
                 </p>
 
                 <div className="flex gap-2">
@@ -861,7 +858,7 @@ const DriverApp = () => {
                     disabled={paymentLoading}
                     className="flex-1 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl disabled:bg-gray-700"
                   >
-                    {paymentLoading ? '...' : 'Haan, Complete'}
+                    {paymentLoading ? '...' : 'Yes, Complete'} {/* ✅ Fixed */}
                   </button>
                 </div>
               </div>
