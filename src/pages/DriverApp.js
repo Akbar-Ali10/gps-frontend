@@ -522,17 +522,15 @@ const DriverApp = () => {
   if (isCompleted) {
     return (
       <div className="min-h-screen bg-gray-950 text-white flex items-center justify-center p-4">
-        <div className="max-w-md w-full bg-gray-900 border border-gray-800 rounded-3xl p-8 text-center">
-          <div className="text-6xl mb-4">✅</div>
-          <h1 className="text-3xl font-black mb-3">Order Completed</h1>
-          <p className="text-gray-400 mb-6">
-            Tracking has stopped. The customer can now submit a review. {/* ✅ Fixed */}
-          </p>
+        <div className="max-w-sm w-full bg-gray-900 border border-gray-800 rounded-3xl p-8 text-center">
+          <div className="w-20 h-20 bg-emerald-900 rounded-full flex items-center justify-center mx-auto mb-5 text-4xl">✅</div>
+          <h1 className="text-2xl font-black mb-2">Order Completed!</h1>
+          <p className="text-gray-400 text-sm mb-8">Tracking stopped. Customer can now submit a review.</p>
           <a
             href="/driver-dashboard"
-            className="block w-full py-4 rounded-2xl bg-blue-600 hover:bg-blue-700 font-bold"
+            className="block w-full py-4 rounded-2xl bg-blue-600 hover:bg-blue-700 font-bold transition-colors"
           >
-            Go to Driver Dashboard
+            ← Back to Dashboard
           </a>
         </div>
       </div>

@@ -58,7 +58,7 @@ const DriverDashboard = () => {
   useEffect(() => {
     if (!driverId) return;
     loadData();
-    const interval = setInterval(loadData, 15000);
+    const interval = setInterval(loadData, 8000);
     return () => clearInterval(interval);
   }, [loadData, driverId]);
 
@@ -160,25 +160,34 @@ const DriverDashboard = () => {
   if (!user || user.role !== 'driver') return null;
 
   return (
-    <div className="min-h-screen bg-slate-100 p-4 md:p-8">
-      <div className="max-w-4xl mx-auto">
-        <header className="mb-8 flex items-start justify-between gap-4 flex-wrap">
-          <div>
-            <h1 className="text-3xl md:text-4xl font-black text-slate-900">
-              Driver Dashboard
-            </h1>
-            <p className="text-slate-600 mt-1">
-              Welcome, <span className="font-semibold text-blue-700">{user.name}</span>
-            </p>
-            <p className="text-xs text-slate-400 mt-1">Driver ID: {driverId}</p>
+    <div className="min-h-screen bg-slate-100">
+      <nav className="bg-white border-b border-slate-200 shadow-sm sticky top-0 z-10">
+        <div className="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <span className="text-xl font-bold text-blue-700">🚚 Quick Delivery</span>
+            <span className="hidden sm:block text-slate-300">|</span>
+            <span className="hidden sm:block text-sm font-semibold text-slate-600">Driver Dashboard</span>
           </div>
+          <div className="flex items-center gap-3">
+            <span className="text-sm text-slate-700 hidden sm:block font-medium">
+              Hi, {user.name}
+            </span>
+            <button
+              onClick={handleLogout}
+              className="px-4 py-2 bg-slate-900 text-white rounded-lg hover:bg-slate-800 font-medium text-sm transition-colors"
+            >
+              Logout
+            </button>
+          </div>
+        </div>
+      </nav>
 
-          <button
-            onClick={handleLogout}
-            className="px-5 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 font-medium"
-          >
-            Logout
-          </button>
+      <div className="max-w-4xl mx-auto p-4 md:p-8">
+        <header className="mb-6 pt-2">
+          <h1 className="text-2xl md:text-3xl font-black text-slate-900">
+            Available Orders
+          </h1>
+          <p className="text-slate-500 mt-1 text-sm">Accept, counter, or reject incoming orders below.</p>
         </header>
 
         {message && (
@@ -195,9 +204,7 @@ const DriverDashboard = () => {
 
         <div>
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-bold text-slate-800">
-              Available Orders ({pendingTrips.length})
-            </h2>
+            <p className="text-sm font-semibold text-slate-500">{pendingTrips.length} order{pendingTrips.length !== 1 ? 's' : ''} available</p>
             <button
               onClick={loadData}
               className="text-sm font-semibold text-blue-600 hover:text-blue-800"
